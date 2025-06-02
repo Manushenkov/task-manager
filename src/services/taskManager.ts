@@ -7,6 +7,7 @@ const simulateDelay = (ms: number) =>
 
 const getTasksFromStorage = (): Task[] => {
   const tasks = localStorage.getItem(STORAGE_KEY);
+
   return tasks ? JSON.parse(tasks) : [];
 };
 
@@ -14,7 +15,7 @@ const saveTasksToStorage = (tasks: Task[]) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
 };
 
-const simulateError = (errorChancePercentage: number = 50): void => {
+const simulateError = (errorChancePercentage: number = 30): void => {
   if (Math.random() <= errorChancePercentage / 100) {
     throw new Error("Random error");
   }
@@ -22,7 +23,7 @@ const simulateError = (errorChancePercentage: number = 50): void => {
 
 export const taskService = {
   async getTasks(): Promise<Task[]> {
-    // await delay(1000); // Simulate delay
+    await simulateDelay(1000); // Simulate delay
 
     // handle strategy: show the error page and suggest a retry
     simulateError();
@@ -73,6 +74,7 @@ export const taskService = {
       completed: !tasks[taskIndex].completed,
     };
     saveTasksToStorage(tasks);
+
     return tasks[taskIndex];
   },
 
@@ -84,12 +86,14 @@ export const taskService = {
 
     const tasks = getTasksFromStorage();
     const taskIndex = tasks.findIndex((task) => task.id === id);
+    if (taskIndex === -1) throw new Error("Task not found");
 
     tasks[taskIndex] = {
       ...tasks[taskIndex],
       title,
     };
     saveTasksToStorage(tasks);
+
     return tasks[taskIndex];
   },
 };

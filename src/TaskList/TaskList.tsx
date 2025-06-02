@@ -9,9 +9,10 @@ import {
   Typography,
 } from "@mui/material";
 import clsx from "clsx";
-import React, { useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
+import { KeyboardKey } from "../constants/global";
 import { taskService } from "../services/taskManager";
 import TaskItem from "../TaskItem/TaskItem";
 import type { Task } from "../types/global";
@@ -22,17 +23,24 @@ enum FilterStatus {
   Completed = "completed",
 }
 
-export const TaskList: React.FC = () => {
+/*
+    Upon clicking the checkbox (isUpdatingChecked), only disable the checkbox.
+    Upon updating the title (isUpdatingTitle), only disable the title input.
+    Upon deleting a task (isDeleting), disable the delete button, checkbox and input.
+*/
+type TaskUiState = {
+  isUpdatingChecked: boolean;
+  isUpdatingTitle: boolean;
+  isDeleting: boolean;
+};
+
+const TaskList: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [isAddingTask, setIsAddingTask] = useState(false);
-  const [taskStatuses, setTaskStatuses] = useState<{
-    [id: string]: {
-      isUpdatingChecked: boolean;
-      isUpdatingTitle: boolean;
-      isDeleting: boolean;
-    };
+  const [tasksUiState, setTasksUiState] = useState<{
+    [id: string]: TaskUiState;
   }>({});
   const [filterStatus, setFilterStatus] = useState<FilterStatus>(
     FilterStatus.All,
@@ -45,112 +53,149 @@ export const TaskList: React.FC = () => {
     });
   }, []);
 
-  const toggleIsDeleting = (id: string, newValue: boolean) => {
-    setTaskStatuses((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], isDeleting: newValue },
-    }));
-  };
+  // useCallbacks are only used to avoid re-renders of the TaskItem list
+  const toggleIsDeleting = useCallback(
+    (id: string, newValue: boolean) => {
+      setTasksUiState((prev) => ({
+        ...prev,
+        [id]: { ...prev[id], isDeleting: newValue },
+      }));
+    },
+    [setTasksUiState],
+  );
 
-  const toggleIsUpdatingChecked = (id: string, newValue: boolean) => {
-    setTaskStatuses((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], isUpdatingChecked: newValue },
-    }));
-  };
+  const toggleIsUpdatingChecked = useCallback(
+    (id: string, newValue: boolean) => {
+      setTasksUiState((prev) => ({
+        ...prev,
+        [id]: { ...prev[id], isUpdatingChecked: newValue },
+      }));
+    },
+    [setTasksUiState],
+  );
 
-  const toggleIsUpdatingTitle = (id: string, newValue: boolean) => {
-    setTaskStatuses((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], isUpdatingTitle: newValue },
-    }));
-  };
+  const toggleIsUpdatingTitle = useCallback(
+    (id: string, newValue: boolean) => {
+      setTasksUiState((prev) => ({
+        ...prev,
+        [id]: { ...prev[id], isUpdatingTitle: newValue },
+      }));
+    },
+    [setTasksUiState],
+  );
 
-  const updateTask = (id: string, newTask: Partial<Task>) => {
-    setTasks((prev) =>
-      prev.map((task) => (task.id === id ? { ...task, ...newTask } : task)),
-    );
-  };
+  const updateTask = useCallback(
+    (id: string, newTask: Partial<Task>) => {
+      setTasks((prev) =>
+        prev.map((task) => (task.id === id ? { ...task, ...newTask } : task)),
+      );
+    },
+    [setTasks],
+  );
 
-  const handleAddTask = async () => {
+  const handleAddTask = useCallback(async () => {
     if (!newTaskTitle.trim()) return;
     setIsAddingTask(true);
     try {
-      const newTask = await taskService.addTask(newTaskTitle);
-      setTasks([...tasks, newTask]);
+      const newTask = await taskService.addTask(newTaskTitle.trim());
+      setTasks((prev) => [...prev, newTask]);
       setNewTaskTitle("");
     } catch (error) {
       console.error("Failed to add task:", error);
       toast.error("Failed to add task");
     }
     setIsAddingTask(false);
+  }, [newTaskTitle]);
+
+  const handleDeleteTask = useCallback(
+    async (id: string) => {
+      try {
+        toggleIsDeleting(id, true);
+
+        await taskService.deleteTask(id);
+        setTasks((prev) => prev.filter((task) => task.id !== id));
+
+        // cleanup the statuses for the deleted task
+        setTasksUiState((prev) => {
+          const updated = { ...prev };
+          delete updated[id];
+          return updated;
+        });
+      } catch (error) {
+        console.error("Failed to delete task:", error);
+        toast.error("Failed to delete task");
+        toggleIsDeleting(id, false);
+      }
+    },
+    [toggleIsDeleting],
+  );
+
+  const handleToggleTask = useCallback(
+    async (id: string) => {
+      try {
+        toggleIsUpdatingChecked(id, true);
+        const updatedTask = await taskService.toggleTaskStatus(id);
+        updateTask(id, { completed: updatedTask.completed });
+      } catch (error) {
+        console.error("Failed to update task status:", error);
+        toast.error("Failed to update task status");
+      } finally {
+        toggleIsUpdatingChecked(id, false);
+      }
+    },
+    [updateTask, toggleIsUpdatingChecked],
+  );
+
+  const handleEditSave = useCallback(
+    async (id: string, previousTitle: string, newTitle: string) => {
+      // optimistically update the task title
+      updateTask(id, { title: newTitle });
+
+      try {
+        toggleIsUpdatingTitle(id, true);
+
+        const updatedTask = await taskService.updateTask(id, newTitle);
+
+        // Replace optimistic update with actual server response
+        updateTask(id, { title: updatedTask.title });
+      } catch (error) {
+        console.error("Failed to save task:", error);
+        toast.error("Failed to save task");
+        // revert to previous state of the task
+        updateTask(id, { title: previousTitle });
+      } finally {
+        toggleIsUpdatingTitle(id, false);
+      }
+    },
+    [updateTask, toggleIsUpdatingTitle],
+  );
+
+  const handleNewTaskTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewTaskTitle(e.target.value);
   };
 
-  const handleDeleteTask = async (id: string) => {
-    try {
-      toggleIsDeleting(id, true);
-
-      await taskService.deleteTask(id);
-      setTasks((prev) => prev.filter((task) => task.id !== id));
-
-      // cleanup the statuses for the deleted task
-      setTaskStatuses((prev) => {
-        const updated = { ...prev };
-        delete updated[id];
-        return updated;
-      });
-    } catch (error) {
-      console.error("Failed to delete task:", error);
-      toast.error("Failed to delete task");
-      toggleIsDeleting(id, false);
+  const handleNewTaskKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === KeyboardKey.Enter) {
+      handleAddTask();
     }
   };
 
-  const handleToggleTask = async (id: string) => {
-    try {
-      toggleIsUpdatingChecked(id, true);
-      const updatedTask = await taskService.toggleTaskStatus(id);
-      updateTask(id, { completed: updatedTask.completed });
-    } catch (error) {
-      console.error("Failed to update task status:", error);
-      toast.error("Failed to update task status");
-    } finally {
-      toggleIsUpdatingChecked(id, false);
-    }
-  };
-
-  const handleEditSave = async (id: string, newTitle: string) => {
-    const prevTask = tasks.find((task) => task.id === id);
-    if (!prevTask) return;
-
-    // optimistically update the task title
-    updateTask(id, { title: newTitle });
-
-    try {
-      toggleIsUpdatingTitle(id, true);
-
-      const updatedTask = await taskService.updateTask(id, newTitle);
-
-      // Replace optimistic update with actual server response
-      updateTask(id, { title: updatedTask.title });
-    } catch (error) {
-      console.error("Failed to save task:", error);
-      toast.error("Failed to save task");
-      // revert to previous state of the task
-      updateTask(id, { title: prevTask.title });
-    } finally {
-      toggleIsUpdatingTitle(id, false);
-    }
+  const handleFilterChange = (
+    _: React.MouseEvent<HTMLElement>,
+    value: FilterStatus,
+  ) => {
+    setFilterStatus(value);
   };
 
   const filteredTasks = tasks.filter((task) => {
     if (filterStatus === FilterStatus.Completed) return task.completed;
     if (filterStatus === FilterStatus.Active) return !task.completed;
+
     return true;
   });
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
+    <div className="max-w-2xl mx-auto p-4 mt-10">
       <Paper className="p-6">
         <Typography className="text-center text-gray-800" variant="h4">
           Task List
@@ -164,12 +209,8 @@ export const TaskList: React.FC = () => {
               size="small"
               value={newTaskTitle}
               variant="outlined"
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleAddTask();
-                }
-              }}
+              onChange={handleNewTaskTitleChange}
+              onKeyDown={handleNewTaskKeyDown}
             />
           </div>
           <Button
@@ -185,24 +226,24 @@ export const TaskList: React.FC = () => {
           color="primary"
           size="small"
           value={filterStatus}
-          onChange={(_, value) => value && setFilterStatus(value)}
+          onChange={handleFilterChange}
         >
           <ToggleButton value={FilterStatus.All}>All</ToggleButton>
           <ToggleButton value={FilterStatus.Active}>Active</ToggleButton>
           <ToggleButton value={FilterStatus.Completed}>Completed</ToggleButton>
         </ToggleButtonGroup>
         <List>
-          {loading && (
-            <List>
-              {Array(4)
-                .fill(0)
-                .map((_, idx) => (
-                  <div key={idx} className="mb-2">
-                    <Skeleton height={60} variant="rectangular" />
-                  </div>
-                ))}
-            </List>
-          )}
+          {loading &&
+            Array(4)
+              .fill(0)
+              .map((_, index) => (
+                <Skeleton
+                  key={index}
+                  className="mb-2"
+                  height={60}
+                  variant="rectangular"
+                />
+              ))}
           {!loading &&
             filteredTasks.map((task, idx) => (
               <div
@@ -212,7 +253,7 @@ export const TaskList: React.FC = () => {
                 })}
               >
                 <TaskItem
-                  {...taskStatuses[task.id]}
+                  {...tasksUiState[task.id]}
                   completed={task.completed}
                   id={task.id}
                   title={task.title}
@@ -227,3 +268,5 @@ export const TaskList: React.FC = () => {
     </div>
   );
 };
+
+export default memo(TaskList);

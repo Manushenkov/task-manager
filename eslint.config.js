@@ -2,6 +2,7 @@ import pluginJs from "@eslint/js";
 import prettier from "eslint-config-prettier";
 import pluginPrettier from "eslint-plugin-prettier";
 import pluginReact from "eslint-plugin-react";
+import pluginReactHooks from "eslint-plugin-react-hooks";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -32,11 +33,19 @@ export default [
       ],
     },
   },
+  // ignore usage of `any` in test files
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
   prettier,
   {
     plugins: {
       prettier: pluginPrettier,
       "simple-import-sort": simpleImportSort,
+      "react-hooks": pluginReactHooks,
     },
     rules: {
       "prettier/prettier": "error",
@@ -46,6 +55,8 @@ export default [
         "error",
         { prefer: "type-imports" },
       ],
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
     },
   },
 ];

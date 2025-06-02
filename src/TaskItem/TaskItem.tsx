@@ -7,7 +7,7 @@ import {
   TextField,
 } from "@mui/material";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 interface TaskItemProps {
   id: string;
@@ -16,7 +16,7 @@ interface TaskItemProps {
   isUpdatingChecked: boolean;
   isUpdatingTitle: boolean;
   isDeleting: boolean;
-  onEditSave: (id: string, title: string) => void;
+  onEditSave: (id: string, previousTitle: string, newTitle: string) => void;
   onDeleteTask: (id: string) => void;
   onToggleTask: (id: string) => void;
 }
@@ -44,11 +44,13 @@ const TaskItem = ({
 
   const handleSave = () => {
     const trimmedNewTitle = newTitle.trim();
+
     if (trimmedNewTitle !== "" && trimmedNewTitle !== title) {
-      onEditSave(id, trimmedNewTitle);
+      onEditSave(id, title, trimmedNewTitle);
     } else {
       setNewTitle(title);
     }
+
     setIsEditing(false);
   };
 
@@ -58,25 +60,33 @@ const TaskItem = ({
     }
   };
 
-  const handleDeleteClick = () => onDeleteTask(id);
+  const handleDeleteClick = () => {
+    if (!isDeleting) {
+      onDeleteTask(id);
+    }
+  };
+
+  const handleListItemTextFocus = () => setIsEditing(true);
 
   const isCheckboxDisabled = isUpdatingChecked || isDeleting;
 
   const handleCheckboxChange = () => {
-    if (!isCheckboxDisabled) onToggleTask(id);
+    if (!isCheckboxDisabled) {
+      onToggleTask(id);
+    }
   };
 
   const handleListItemTextClick = () => {
-    if (!isCheckboxDisabled) setIsEditing(true);
+    if (!isCheckboxDisabled) {
+      setIsEditing(true);
+    }
   };
-
-  const handleListItemTextFocus = () => setIsEditing(true);
 
   return (
     <ListItem
       className="transition-colors"
       secondaryAction={
-        <IconButton onClick={handleDeleteClick}>
+        <IconButton name="delete" onClick={handleDeleteClick}>
           <DeleteIcon />
         </IconButton>
       }
@@ -98,7 +108,6 @@ const TaskItem = ({
           onChange={handleCheckboxChange}
         />
       </div>
-
       {isEditing ? (
         <TextField
           autoFocus
@@ -126,4 +135,4 @@ const TaskItem = ({
   );
 };
 
-export default TaskItem;
+export default memo(TaskItem);
