@@ -9,7 +9,7 @@ const LANGUAGE_MAP = {
   // Add more as needed
 } as const;
 
-const LanguageSwitch = () => {
+const LanguageSelector = () => {
   const { i18n } = useTranslation();
 
   const handleLanguageChange = (event: SelectChangeEvent) => {
@@ -35,4 +35,4 @@ const LanguageSwitch = () => {
   );
 };
 
-export default memo(LanguageSwitch);
+export default memo(LanguageSelector);

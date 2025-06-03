@@ -15,7 +15,7 @@ const saveTasksToStorage = (tasks: Task[]) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
 };
 
-const simulateError = (errorChancePercentage: number = 30): void => {
+const simulateError = (errorChancePercentage: number = 10): void => {
   if (Math.random() <= errorChancePercentage / 100) {
     throw new Error("Random error");
   }
@@ -62,7 +62,7 @@ export const taskService = {
   async toggleTaskStatus(id: string, newState: boolean): Promise<Task> {
     await simulateDelay(300);
 
-    // handle strategy: show a notification
+    // handle strategy: show a notification and restore old value
     simulateError();
 
     const tasks = getTasksFromStorage();

@@ -3,7 +3,7 @@ import { ToastContainer } from "material-react-toastify";
 import { ErrorBoundary } from "react-error-boundary";
 
 import GlobalErrorPage from "./components/GlobalErrorPage";
-import LanguageSwitch from "./components/LanguageSwitch/LanguageSwitch";
+import LanguageSwitch from "./components/LanguageSelector/LanguageSelector";
 import TaskList from "./components/TaskList/TaskList";
 import ThemeSwitch from "./components/ThemeSwitch/ThemeSwitch";
 import { GlobalErrorProvider } from "./GlobalErrorProvider";

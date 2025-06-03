@@ -9,6 +9,8 @@ import {
 import clsx from "clsx";
 import { memo, useEffect, useState } from "react";
 
+import { KeyboardKey } from "../../../constants/global";
+
 interface TaskItemProps {
   id: string;
   title: string;
@@ -55,7 +57,7 @@ const TaskItem = ({
   };
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === KeyboardKey.Enter && !e.shiftKey) {
       handleSave();
     }
   };
