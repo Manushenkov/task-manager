@@ -1,6 +1,6 @@
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import { ToastContainer } from "material-react-toastify";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary} from "react-error-boundary"
 
 import GlobalErrorPage from "./components/GlobalErrorPage";
 import LanguageSwitch from "./components/LanguageSwitch/LanguageSwitch";
