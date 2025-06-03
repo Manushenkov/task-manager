@@ -2,6 +2,8 @@
 
 <b> use node version 20 </b>
 
+I tested the app and the dev commands on both macos and ubuntu
+
 #### run the project
 ```bash
 npm i
