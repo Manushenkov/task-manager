@@ -120,7 +120,7 @@ describe("TaskList component", () => {
     userEvent.click(checkboxes[0]);
 
     await waitFor(() =>
-      expect(taskService.toggleTaskStatus).toHaveBeenCalledWith("1", true),
+      expect(taskService.toggleTaskStatus).toHaveBeenCalledWith("1"),
     );
 
     expect(checkboxes[0].checked).toBe(true);
