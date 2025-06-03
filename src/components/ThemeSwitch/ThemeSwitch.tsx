@@ -2,7 +2,6 @@ import { DarkMode, LightMode } from "@mui/icons-material";
 import { IconButton, useColorScheme } from "@mui/material";
 import { memo } from "react";
 
-// TODO - fix theme flicker when loading the page in dark mode by default
 const ThemeSwitch = () => {
   const { mode, setMode } = useColorScheme();
 
