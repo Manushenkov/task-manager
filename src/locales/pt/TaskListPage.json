@@ -1,0 +1,25 @@
+{
+  "title": "Lista de Tarefas",
+  "taskInput": {
+    "placeholder": "Adicionar uma nova tarefa",
+    "addButton": "Adicionar Tarefa"
+  },
+  "filters": {
+    "all": "Todas",
+    "active": "Ativas",
+    "completed": "Concluídas"
+  },
+  "errors": {
+    "global": {
+      "title": "Algo deu errado",
+      "message": "Encontramos um erro inesperado. Tente recarregar a página.",
+      "retryButton": "Tentar novamente"
+    },
+    "task": {
+      "addFailed": "Falha ao adicionar tarefa",
+      "deleteFailed": "Falha ao excluir tarefa",
+      "updateStatusFailed": "Falha ao atualizar status da tarefa",
+      "saveFailed": "Falha ao salvar tarefa"
+    }
+  }
+}

@@ -1,13 +1,13 @@
-// TaskList.test.tsx
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { taskService } from "../services/taskManager";
-import type { Task } from "../types/global";
+import { testLocaleSetup } from "../../locales/testLocaleSetup";
+import { taskService } from "../../services/taskManager";
+import type { Task } from "../../types/global";
 import TaskList from "./TaskList";
 
-vi.mock("../services/taskManager", () => ({
+vi.mock("../../services/taskManager", () => ({
   taskService: {
     getTasks: vi.fn(),
     addTask: vi.fn(),
@@ -23,8 +23,8 @@ const mockTasks: Task[] = [
 ];
 
 describe("TaskList component", () => {
+  beforeAll(testLocaleSetup);
   beforeEach(() => {
-    // vi.clearAllMocks();
     (taskService.getTasks as any).mockResolvedValue(mockTasks);
   });
 
@@ -120,7 +120,7 @@ describe("TaskList component", () => {
     userEvent.click(checkboxes[0]);
 
     await waitFor(() =>
-      expect(taskService.toggleTaskStatus).toHaveBeenCalledWith("1"),
+      expect(taskService.toggleTaskStatus).toHaveBeenCalledWith("1", true),
     );
 
     expect(checkboxes[0].checked).toBe(true);

@@ -18,7 +18,7 @@ interface TaskItemProps {
   isDeleting: boolean;
   onEditSave: (id: string, previousTitle: string, newTitle: string) => void;
   onDeleteTask: (id: string) => void;
-  onToggleTask: (id: string) => void;
+  onToggleTask: (id: string, previousState: boolean) => void;
 }
 
 const TaskItem = ({
@@ -72,7 +72,7 @@ const TaskItem = ({
 
   const handleCheckboxChange = () => {
     if (!isCheckboxDisabled) {
-      onToggleTask(id);
+      onToggleTask(id, !completed);
     }
   };
 
@@ -94,7 +94,9 @@ const TaskItem = ({
       <div className="select-none">
         <Checkbox
           checked={completed}
-          className={"transition-colors duration-100"}
+          className="transition-colors duration-100"
+          // manually change styles to keep keyboard focus on the element when pressing spacebar
+          // if disabled property is used, the focus is lost
           sx={
             isCheckboxDisabled
               ? {
@@ -121,7 +123,7 @@ const TaskItem = ({
         />
       ) : (
         <ListItemText
-          className={clsx("transition-colors duration-100 break-word", {
+          className={clsx("transition-colors duration-100 break-all", {
             "line-through text-gray-500": completed,
             "text-neutral-300": isUpdatingTitle || isDeleting,
           })}

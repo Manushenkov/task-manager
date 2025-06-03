@@ -14,6 +14,7 @@ export const GlobalErrorProvider = ({
       showBoundary(event.reason);
     };
     window.addEventListener("unhandledrejection", handler);
+
     return () => window.removeEventListener("unhandledrejection", handler);
   }, [showBoundary]);
 
