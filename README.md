@@ -24,6 +24,8 @@ npm run lint:fix
 ### Contributing
 After creating a PR request, tests and linter are run automatically in github
 
+Check the `mock-workflow-failure` merge request to see a failed linter and test example
+
 
 ## Simulate errors
 just change the default error chance in taskManager.ts
