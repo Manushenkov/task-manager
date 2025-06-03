@@ -33,7 +33,7 @@ just change the default error chance in taskManager.ts
 const simulateError = (errorChancePercentage: number = 30): void => {
 ```
 
-## Things to make a note of
+## Things to take a note of
 An effort was put into making the app accessible, it's usable with keyboard only!
 
 I added `eslint-plugin-react` to sort props and `eslint-plugin-import` to sort imports, this speeds up code review and reduces manual work
