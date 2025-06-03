@@ -21,7 +21,7 @@ const LanguageSwitch = () => {
       <FormControl className="ml-auto" size="small">
         <Select
           sx={{ minWidth: 120 }}
-          value={i18n.language}
+          value={i18n.language || "en"}
           onChange={handleLanguageChange}
         >
           {Object.entries(LANGUAGE_MAP).map(([code, label]) => (
