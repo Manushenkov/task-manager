@@ -1,0 +1,25 @@
+{
+  "title": "Task List",
+  "taskInput": {
+    "placeholder": "Add a new task",
+    "addButton": "Add Task"
+  },
+  "filters": {
+    "all": "All",
+    "active": "Active",
+    "completed": "Completed"
+  },
+  "errors": {
+    "global": {
+      "title": "Something went wrong",
+      "message": "We encountered an unexpected error. Try reloading the page.",
+      "retryButton": "Retry"
+    },
+    "task": {
+      "addFailed": "Failed to add task",
+      "deleteFailed": "Failed to delete task",
+      "updateStatusFailed": "Failed to update task status",
+      "saveFailed": "Failed to save task"
+    }
+  }
+}

@@ -23,7 +23,7 @@ const simulateError = (errorChancePercentage: number = 30): void => {
 
 export const taskService = {
   async getTasks(): Promise<Task[]> {
-    await simulateDelay(1000); // Simulate delay
+    await simulateDelay(1000);
 
     // handle strategy: show the error page and suggest a retry
     simulateError();
@@ -32,7 +32,7 @@ export const taskService = {
   },
 
   async addTask(title: string): Promise<Task> {
-    await simulateDelay(500); // Simulate delay
+    await simulateDelay(500);
 
     // handle strategy: show a notification
     simulateError();
@@ -49,7 +49,7 @@ export const taskService = {
   },
 
   async deleteTask(id: string): Promise<void> {
-    await simulateDelay(500); // Simulate deletion delay
+    await simulateDelay(500);
 
     // handle strategy: show a notification
     simulateError();
@@ -59,8 +59,8 @@ export const taskService = {
     saveTasksToStorage(filteredTasks);
   },
 
-  async toggleTaskStatus(id: string): Promise<Task> {
-    await simulateDelay(300); // Simulate update delay
+  async toggleTaskStatus(id: string, newState: boolean): Promise<Task> {
+    await simulateDelay(300);
 
     // handle strategy: show a notification
     simulateError();
@@ -71,7 +71,7 @@ export const taskService = {
 
     tasks[taskIndex] = {
       ...tasks[taskIndex],
-      completed: !tasks[taskIndex].completed,
+      completed: newState,
     };
     saveTasksToStorage(tasks);
 
